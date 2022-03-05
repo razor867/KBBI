@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+
+	<title>KBBI</title>
+</head>
+<body>
+	<article>
+		<div class="container">
+			<div class="row mt-4">
+				<div class="col-md-12">
+					<h4>KBBI</h4>
+					<p>Cari kata yang belum anda ketahui dengan mudah</p>
+				</div>
+				<div class="col-md-5">
+					<div class="card">
+					  <div class="card-header">
+					    <h6>Cari Kata!</h6>
+					  </div>
+					  <div class="card-body">
+					    <div class="mb-3">
+						    <input type="text" placeholder="Search" class="form-control" id="search" name="search" aria-describedby="searchHelp">
+						    <div id="searchHelp" class="form-text">Contoh apel</div>
+						  </div>
+						<button class="btn btn-primary" onclick="search()">Submit</button>
+					  </div>
+					</div>
+				</div>
+				<div class="col-md-12 mb-4">
+					<div id="resData" class="mt-4"></div>
+				</div>
+			</div>
+		</div>
+	</article>
+
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+	<script type="text/javascript">
+		function search() {
+			// api url
+			var api_url = "https://kbbi-api-amm.herokuapp.com/search?q=";
+			var searchData = document.getElementById("search").value;
+			api_url = api_url + searchData;
+
+			if (searchData != '') {
+				document.getElementById("resData").innerHTML = `
+					<div class="text-center">
+					  <div class="spinner-border" role="status">
+					    <span class="visually-hidden">Loading...</span>
+					  </div>
+					</div>
+				`;
+				getapi(api_url);
+			} else {
+				document.getElementById("resData").innerHTML = '<center><h4>Mohon isi input Search</h4></center>';
+			}
+		}
+
+		// Defining async function
+		async function getapi(url) {
+		    // Storing response
+		    const response = await fetch(url);
+		    // Storing data in form of JSON
+		    var data = await response.json();
+		    console.log(data);
+		    if (response) {
+		        // hideloader();
+		    }
+		    show(data);
+		}
+
+		function show(data)
+		{
+			var resHtml = '';
+			if (data.status == true)
+			{
+				var ol = `<ol class="list-group list-group-numbered">`;
+				var endOl = `</ol>`;
+
+				if (data.data.resultLists.length > 0)
+				{
+					data.data.resultLists.forEach(function (val) {
+						let headerList = `
+							<li class="list-group-item d-flex justify-content-between align-items-start">
+							    <div class="ms-2 me-auto">
+							      <div class="fw-bold">` + val.kata + `</div>
+						`;
+						let bodyList = '';
+						val.arti.forEach(function (resBody) {
+							bodyList = bodyList + `<p>` + resBody + `</p>`;
+						})
+						let footerList = `
+								</div>
+							</li>
+						`;
+						ol += headerList + bodyList + footerList;
+					});
+					resHtml = ol + endOl;
+				}
+			} else {
+				resHtml = `<center><h4>Gagal memuat data! periksa jaringan anda</h4></center>`;
+			}
+			
+			document.getElementById("resData").innerHTML = resHtml;
+			// console.log(resHtml);
+		}
+	</script>
+</body>
+</html>
